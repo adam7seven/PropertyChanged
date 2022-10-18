@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Collections.Generic;
+
 using TypeSystem = Fody.TypeSystem;
 
 public class PropertyWeaver
@@ -58,6 +60,9 @@ public class PropertyWeaver
     {
         index = AddIsChangedSetterCall(index);
 
+        var onChangedMethods = GetMethodsForProperty(propertyData.ParentType, propertyData.PropertyDefinition);
+        index = AddEventInvokeCall(index, onChangedMethods, propertyData.PropertyDefinition);
+
         foreach (var alsoNotifyForDefinition in propertyData.AlsoNotifyFor.Distinct())
         {
             var alsoNotifyMethods = GetMethodsForProperty(propertyData.ParentType, alsoNotifyForDefinition);
@@ -65,8 +70,8 @@ public class PropertyWeaver
             index = AddEventInvokeCall(index, alsoNotifyMethods, alsoNotifyForDefinition);
         }
 
-        var onChangedMethods = GetMethodsForProperty(propertyData.ParentType, propertyData.PropertyDefinition);
-        AddEventInvokeCall(index, onChangedMethods, propertyData.PropertyDefinition);
+        //var onChangedMethods = GetMethodsForProperty(propertyData.ParentType, propertyData.PropertyDefinition);
+        //AddEventInvokeCall(index, onChangedMethods, propertyData.PropertyDefinition);
     }
 
     List<OnChangedMethod> GetMethodsForProperty(TypeNode typeNode, PropertyDefinition property)
